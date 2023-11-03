@@ -1,0 +1,118 @@
+{
+  "name": "azure_webapp_certificate_renewal_failures",
+  "description": "This incident type refers to a failure in the auto-renewal process of SSL/TLS certificates for Azure Webapp services. This can result in expired certificates, leading to potential security vulnerabilities and interruptions in service. The resolution involves ensuring that the SSL/TLS certificates are configured correctly for auto-renewal, updating certificate settings, and manually renewing certificates if necessary.",
+  "params": [
+    {
+      "name": "CERTIFICATE_NAME",
+      "value": ""
+    },
+    {
+      "name": "CERTIFICATE_PASSWORD",
+      "value": ""
+    },
+    {
+      "name": "CERTIFICATE_FILE_PATH",
+      "value": ""
+    },
+    {
+      "name": "APP_NAME",
+      "value": ""
+    },
+    {
+      "name": "RESOURCE_GROUP",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Azure Webapp Certificate Renewal Failures\nThis incident type refers to a failure in the auto-renewal process of SSL/TLS certificates for Azure Webapp services. This can result in expired certificates, leading to potential security vulnerabilities and interruptions in service. The resolution involves ensuring that the SSL/TLS certificates are configured correctly for auto-renewal, updating certificate settings, and manually renewing certificates if necessary."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## List all enabled hostnames for the specific web app"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp show --name ${APP_NAME} --resource-group ${RESOURCE_GROUP} --query \"hostnameSslStates\"`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## List the SSL certificates for a specific web app"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp config ssl list --resource-group ${RESOURCE_GROUP} --query \"[].name\"`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## View detailed SSL certificate information for a specific binding"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp config ssl show --resource-group ${RESOURCE_GROUP} --certificate-name ${CERTIFICATE_NAME}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the expiration date of an SSL certificate"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp config ssl show --resource-group ${RESOURCE_GROUP} --certificate-name ${CERTIFICATE_NAME} --query \"expirationDate\" --output tsv`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Verify that the SSL certificate is a managed certificate"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `az webapp config ssl show --resource-group ${RESOURCE_GROUP} --certificate-name ${CERTIFICATE_NAME} --query \"type\" --output tsv`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Manually renew an SSL certificate"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_upload_ssl_certificate($CERTIFICATE_PASSWORD, $CERTIFICATE_FILE_PATH, $APP_NAME, $RESOURCE_GROUP)"
+    }
+  ]
+}
